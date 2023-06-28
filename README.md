@@ -1,1 +1,3 @@
 # Exam-Cheating-Detection
+This is our mini project on Image Processing application in Examination Proctoring
+More : .... 
