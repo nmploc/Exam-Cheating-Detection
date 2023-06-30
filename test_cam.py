@@ -7,6 +7,7 @@ cap = cv2.VideoCapture(0)
 while True:
     ret, frame = cap.read() 
     result = model(frame, save = False)
+    print(result)
     frame = result[0].plot()
     cv2.imshow('frame', frame)
     if cv2.waitKey(1) == ord('q'):
