@@ -11,9 +11,9 @@ while True:
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     results = mp_face_mesh.FaceMesh(refine_landmarks = True).process(frame)
-    ls_single_face=results.multi_face_landmarks[0].landmark
-    for idx in ls_single_face:
-        print(idx.x,idx.y,idx.z, idx.vi)
+    #ls_single_face=results.multi_face_landmarks[0].landmark
+    #for idx in ls_single_face:
+        #print(idx.x,idx.y,idx.z, idx.vi)
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     if results.multi_face_landmarks:
         for face_landmarks in results.multi_face_landmarks:

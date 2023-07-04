@@ -1,0 +1,4 @@
+import ultralytics
+import torch
+print(torch.cuda.is_available())
+ultralytics.checks()
