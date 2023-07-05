@@ -27,13 +27,14 @@ while True:
             left = int(b[1])
             bottom = int(b[2])
             right = int(b[3])
-
-             # Crop the region of interest
-            roi = frame[top:bottom, left:right]
-            # Display the cropped ROI
-            cv2.imshow('ROI', roi)
             c = box.cls
-            annotator.box_label(b, model.names[int(c)])
+            if model.names[int(c)] == 'person':
+                annotator.box_label(b, model.names[int(c)])
+                # Crop the region of interest
+                roi = frame[top:bottom, left:right]
+                # Display the cropped ROI
+                cv2.imshow('ROI', roi)
+            
           
     frame = annotator.result()  
     cv2.imshow('YOLO V8 Detection', frame)     
