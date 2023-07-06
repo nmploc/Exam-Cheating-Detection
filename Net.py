@@ -2,17 +2,18 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
-import torch.nn.functional as F 
+import torch.nn.functional as f
 import pandas as pd 
 from sklearn.model_selection import train_test_split
 import numpy as np
+import matplotlib.pyplot as plt
 
-csv = 'DATA.csv'
-data = pd.read_csv(csv)
-label = data[:,0]
-data = data[:,1:]
+csv = 'landmarks.csv'
+Data = pd.read_csv(csv)
+label = Data['label']
+data = Data.iloc[:,2:]
 
-dataT = torch.tensor(data).float()
+dataT = torch.tensor(data.values).float()
 labelsT = torch.tensor(label).long()
 
 train_data, test_data, train_labels, test_labels = train_test_split(dataT, labelsT, test_size=0.8)
@@ -27,15 +28,15 @@ def createNN():
     class FFN(nn.Module):
         def __init__(self):
             super().__init__()
-            self.input = nn.Linear(1422, 711)
-            self.fc1 = nn.Linear(711, 237)
-            self.fc2 = nn.Linear(237,40)
-            self.output = nn.Linear(40, 3)
+            self.input = nn.Linear(24, 120)
+            self.fc1 = nn.Linear(120, 240)
+            self.fc2 = nn.Linear(240,40)
+            self.output = nn.Linear(40, 2)
 
         def forward(self, x):
-            x = self.relu(self.input(x))
-            x = self.relu(self.fc1(x))
-            x = self.relu(self.fc2(x))
+            x = f.relu(self.input(x))
+            x = f.relu(self.fc1(x))
+            x = f.relu(self.fc2(x))
             return torch.log_softmax(self.output(x), axis = 1)
     net = FFN()
     lossfun = nn.NLLLoss()
@@ -62,4 +63,14 @@ def trainModel():
             
             batchLoss.append(loss.item())
         losses[epochi] = np.mean(batchLoss)
+    return losses, net
+
+losses, Net = trainModel()
+print("final loss = ", str(losses[-1]))
+plt.plot(losses, '.-')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.show()
+
+
 
