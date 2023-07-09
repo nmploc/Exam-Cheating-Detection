@@ -1,63 +1,67 @@
+import os
+import csv
 import cv2
 import mediapipe as mp
-from getBB import get_bounding_box
-import csv
+import numpy as np
+import math
+from boundbox import detect_human
 
-mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
+pose = mp_pose.Pose(static_image_mode = True ,min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-# Load the pose data from the CSV file
-pose_data = []
-with open('landmask.csv', 'r') as file:
-    reader = csv.DictReader(file)
-    for row in reader:
-        pose_data.append(row)
+data_path = 'D:\CODE\COMPUTER VISION\Vision Proj\DATASET'
+csv_file = 'landmarks.csv'
+labels = {'cheating': 1, 'not_cheating': 0}
 
-cap = cv2.VideoCapture(0)
-cap.set(3, 640)
-cap.set(4, 480)
+with open(csv_file, mode='a', newline='') as f:
+    csv_writer = csv.writer(f)
+    header = ['file_name', 'label', 'nose_x', 'nose_y', 'left_shoulder_x', 'left_shoulder_y', 'right_shoulder_x', 'right_shoulder_y', 'left_elbow_x', 'left_elbow_y', 'right_elbow_x', 'right_elbow_y', 'left_wrist_x', 'left_wrist_y', 'right_wrist_x', 'right_wrist_y', 'left_index_finger_x', 'left_index_finger_y', 'right_index_finger_x', 'right_index_finger_y', 'left_eye_x', 'left_eye_y', 'left_eye_z', 'right_eye_x', 'right_eye_y', 'right_eye_z']
+    landmark_names = ['nose', 'left_shoulder', 'right_shoulder', 'left_elbow', 'right_elbow', 'left_wrist', 'right_wrist', 'left_index', 'right_index']
 
-with mp_pose.Pose(
-        min_detection_confidence=0.5,
-        min_tracking_confidence=0.5) as pose:
-    while cap.isOpened():
-        success, image = cap.read()
-        if not success:
-            print("Failed to read frame from camera.")
-            break
+    csv_writer.writerow(header)
 
-        # Get the bounding box coordinates
-        bounding_box = get_bounding_box()
+for label in labels:
+    label_path = os.path.join(data_path, label)
+    for filename in os.listdir(label_path):
+        if filename.endswith('.jpg') or filename.endswith('.png'):
 
-        if bounding_box:
-            top, left, bottom, right = bounding_box
+            img = cv2.imread(os.path.join(label_path, filename))
 
-            # Crop the frame within the bounding box
-            cropped_image = image[top:bottom, left:right]
+            roi = detect_human(img)
+            if roi is None:
+                continue
+            roi_rgb = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
+            #print(roi)
+            results = pose.process(roi_rgb)
+            if results.pose_landmarks is not None:
+                landmarks = [filename, labels[label]]
 
-            # Convert the cropped image to RGB
-            cropped_image_rgb = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
+                # Extract landmark coordinates
+                for i, landmark in enumerate(results.pose_landmarks.landmark):
+                    landmark_name = mp_pose.PoseLandmark(i).name.lower()
+                    if landmark.visibility >= 0.5 and landmark_name in landmark_names:    
+                        landmarks.append(round(landmark.x, 5))
+                        landmarks.append(round(landmark.y, 5))
+                    elif landmark_name in landmark_names:
+                        landmarks.append(100)
+                        landmarks.append(100)
+                #Angels
 
-            # Process the cropped image with Mediapipe Pose
-            results = pose.process(cropped_image_rgb)
+                left_eye = results.pose_landmarks.landmark[1]
+                right_eye = results.pose_landmarks.landmark[2]
 
-            # Draw the pose landmarks on the cropped image
-            if results.pose_landmarks:
-                mp_drawing.draw_landmarks(
-                    image=cropped_image,
-                    landmark_list=results.pose_landmarks,
-                    connections=mp_pose.POSE_CONNECTIONS,
-                    landmark_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=2),
-                    connection_drawing_spec=mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2))
+                landmarks.append(round(left_eye.x, 5))
+                landmarks.append(round(left_eye.y, 5))
+                landmarks.append(round(left_eye.z, 5))
+                landmarks.append(round(right_eye.x, 5))
+                landmarks.append(round(right_eye.y, 5))
+                landmarks.append(round(right_eye.z, 5))
 
-            # Display the cropped image with pose landmarks
-            cv2.imshow('Camera', cropped_image)
-        else:
-            cv2.putText(image, 'No person detected', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            cv2.imshow('Camera', image)
+                with open(csv_file, mode='a', newline='') as f:
+                    csv_writer = csv.writer(f)
+                    csv_writer.writerow(landmarks)
+            
+            cv2.imshow("ROI: "+filename, roi)
+            cv2.waitKey(100)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-cap.release()
-cv2.destroyAllWindows()
+            cv2.destroyAllWindows()
