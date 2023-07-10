@@ -1,11 +1,7 @@
 import cv2
 import csv
 import mediapipe as mp
-
-# Function to read bounding box coordinates from getBB.py
-def get_bounding_box():
-    # Your implementation of getting bounding box coordinates from getBB.py
-    pass
+from getBB import get_bounding_box 
 
 # Function to read landmarks from CSV file
 def read_landmarks_from_csv(file_path):
@@ -53,13 +49,18 @@ def main():
         if results.multi_face_landmarks:
             # Get first face landmarks
             face_landmarks = results.multi_face_landmarks[0]
-
-            # Extract desired landmarks
             extracted_landmarks = []
-            for point in landmarks:
-                x = int(face_landmarks.landmark[point].x * cropped_frame.shape[1])
-                y = int(face_landmarks.landmark[point].y * cropped_frame.shape[0])
-                extracted_landmarks.append([x, y])
+            # Extract desired landmarks
+            x1 = int(face_landmarks.landmark[landmarks[0]].x * cropped_frame.shape[1])
+            y1 = int(face_landmarks.landmark[landmarks[0]].y * cropped_frame.shape[0])
+            extracted_landmarks.append([x1, y1])
+
+            x2 = int(face_landmarks.landmark[landmarks[1]].x * cropped_frame.shape[1])
+            y2 = int(face_landmarks.landmark[landmarks[1]].y * cropped_frame.shape[0])
+            extracted_landmarks.append([x2, y2])
+
+# Tiếp tục viết từng điểm còn lại tương tự
+
 
             # Draw landmarks on frame
             draw_landmarks(cropped_frame, extracted_landmarks)
