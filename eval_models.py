@@ -42,7 +42,6 @@ Test_data = test_data
 train_data = TensorDataset(train_data, train_labels)
 test_data = TensorDataset(test_data, test_labels)
 
-
 Net, lossfun, optimizer = createNN()
 Net.load_state_dict(torch.load('model1.pt'))
 pred = Net(Test_data)

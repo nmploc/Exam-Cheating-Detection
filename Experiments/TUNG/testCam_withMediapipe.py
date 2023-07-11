@@ -1,76 +1,87 @@
 import cv2
-import csv
 import mediapipe as mp
 from getBB import get_bounding_box
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import TensorDataset, DataLoader
+import torch.nn.functional as f
 
 
-# Function to read landmarks from CSV file
-def read_landmarks_from_csv(file_path):
-    landmarks = []
-    with open(file_path, 'r') as file:
-        csv_reader = csv.reader(file)
-        next(csv_reader)  # Skip header row
-        for row in csv_reader:
-            landmarks.append(row)
-    return landmarks
+def createNN():
+    class FFN(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.input = nn.Linear(24, 120)
+            self.fc1 = nn.Linear(120, 240)
+            self.fc2 = nn.Linear(240,40)
+            self.output = nn.Linear(40, 2)
 
-# Function to display landmarks on frame
-def draw_landmarks(frame, landmarks):
-    for landmark in landmarks:
-        x, y = int(landmark[0]), int(landmark[1])
-        cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
+        def forward(self, x):
+            x = f.relu(self.input(x))
+            x = f.relu(self.fc1(x))
+            x = f.relu(self.fc2(x))
+            return torch.log_softmax(self.output(x), axis = 1)
+    net = FFN()
+    lossfun = nn.NLLLoss()
+    optimizer = optim.SGD(net.parameters(), lr = 0.001)
 
-# Main function
-def main():
-    # Load YOLO model and get bounding box coordinates from getBB.py
-    top, left, bottom, right = get_bounding_box()
+    return net, lossfun, optimizer
 
-    # Load Mediapipe solution for face landmarks
-    mp_face_mesh = mp.solutions.face_mesh.FaceMesh()
 
-    # Read landmarks from CSV file
-    landmarks = read_landmarks_from_csv('landmarks.csv')
+cap = cv2.VideoCapture(0)
 
-    # Open video capture
-    cap = cv2.VideoCapture(0)
-    while cap.isOpened():
-        # Read frame
-        _, frame = cap.read()
+while True:
+    ret, frame = cap.read()
 
-        # Crop frame using bounding box coordinates
-        cropped_frame = frame[top:bottom, left:right]
+    if not ret:
+        break
+    x1,y1,x2,y2 = get_bounding_box(frame)
+    # Crop frame using bounding box coordinates
+    cropped_frame = frame[y1:y2,x1:x2]
 
-        # Convert frame to RGB
-        frame_rgb = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)
+    mp_pose = mp.solutions.pose
+    pose = mp_pose.Pose()
+    img = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)
+    results = pose.process(img)
 
-        # Process frame with Mediapipe FaceMesh
-        results = mp_face_mesh.process(frame_rgb)
+    mp.solutions.drawing_utils.draw_landmarks(cropped_frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
 
-        # Extract landmarks from Mediapipe results
-        if results.multi_face_landmarks:
-            # Get first face landmarks
-            face_landmarks = results.multi_face_landmarks[0]
+    if results.pose_landmarks:
+        for landmark in results.pose_landmarks.landmark:
+            if(landmark.visibility <= 0.2):
+                landmark.x = 100
+                landmark.y = 100
+        nose = results.pose_landmarks.landmark[0]
+        left_wrist = results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_WRIST]
+        right_wrist = results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_WRIST]
+        left_elbow = results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_ELBOW]
+        right_elbow = results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_ELBOW]
+        left_shoulder = results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_SHOULDER]
+        right_shoulder = results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_SHOULDER]
+        left_eye = results.pose_landmarks.landmark[1]
+        right_eye = results.pose_landmarks.landmark[2]
+        left_index = results.pose_landmarks.landmark[24]
+        right_index = results.pose_landmarks.landmark[25]
+    
+    Net, lossfun, optimizer = createNN()
+    Net.load_state_dict(torch.load('model1.pt'))
+    input = torch.tensor([[nose.x, nose.y, left_shoulder.x, left_shoulder.y, right_shoulder.x, right_shoulder.y, left_elbow.x, left_elbow.y, right_elbow.x, right_elbow.y, left_wrist.x, left_wrist.y, right_wrist.x, right_wrist.y, left_index.x, left_index.y, right_index.x, right_index.y, left_eye.x, left_eye.y, left_eye.z, right_eye.x, right_eye.y, right_eye.z]])
+    print(input)
+    prediction = Net(input)
+    prediction = torch.max(prediction,1)[1]
+    pred = prediction[0].tolist()
+    print(pred)
+    if(pred ==1):
+        cv2.rectangle(frame, (x1,y1), (x2,y2), (0,0,255), 2)
+    else:
+        cv2.rectangle(frame, (x1,y1), (x2,y2), (0,255,0), 2)
+    cv2.imshow("frame", frame)
 
-            # Extract desired landmarks
-            extracted_landmarks = []
-            for point in landmarks:
-                x = int(face_landmarks.landmark[point].x * cropped_frame.shape[1])
-                y = int(face_landmarks.landmark[point].y * cropped_frame.shape[0])
-                extracted_landmarks.append([x, y])
+    if cv2.waitKey(1) == ord("q"):
+        break
 
-            # Draw landmarks on frame
-            draw_landmarks(cropped_frame, extracted_landmarks)
+    pose.close()
 
-        # Display frame
-        cv2.imshow("Frame", frame)
-
-        # Exit if 'q' is pressed
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    # Release video capture and destroy windows
-    cap.release()
-    cv2.destroyAllWindows()
-
-if __name__ == "__main__":
-    main()
+cap.release()
+cv2.destroyAllWindows()
