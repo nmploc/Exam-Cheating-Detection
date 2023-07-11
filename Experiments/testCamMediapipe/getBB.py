@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 import cv2
 import time
-
+top = left = bottom = right = 100 
 def get_bounding_box():
     model = YOLO('yolov8n.pt')
     cap = cv2.VideoCapture(0)
@@ -12,7 +12,6 @@ def get_bounding_box():
     _, frame = cap.read()
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = model.predict(img)
-
     # Find the bounding box coordinates
     for r in results:
         boxes = r.boxes
