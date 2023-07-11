@@ -1,11 +1,8 @@
 import cv2
 import csv
 import mediapipe as mp
+from getBB import get_bounding_box
 
-# Function to read bounding box coordinates from getBB.py
-def get_bounding_box():
-    # Your implementation of getting bounding box coordinates from getBB.py
-    pass
 
 # Function to read landmarks from CSV file
 def read_landmarks_from_csv(file_path):
