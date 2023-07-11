@@ -23,8 +23,6 @@ def get_bounding_box():
                 left = int(b[1])
                 bottom = int(b[2])
                 right = int(b[3])
-            else:
-                return 0
 
     # Return the bounding box coordinates
     return top, left, bottom, right
