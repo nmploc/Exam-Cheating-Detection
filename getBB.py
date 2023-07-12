@@ -3,10 +3,14 @@ import cv2
 import time
 
 def get_bounding_box(frame):
+<<<<<<< HEAD
     model = YOLO('yolov8m.pt')
 
     # Capture a frame
 
+=======
+    model = YOLO('yolov8n.pt')
+>>>>>>> 1f7ecf8825421a0ed4e7f4395f59fe6d7e13f2df
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = model.predict(img, device = 0)
     x1 = 0 
