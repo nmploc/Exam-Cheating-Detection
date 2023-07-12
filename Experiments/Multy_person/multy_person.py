@@ -7,7 +7,7 @@ import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 import torch.nn.functional as f
 
-
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 def createNN():
     class FFN(nn.Module):
         def __init__(self):
@@ -29,7 +29,7 @@ def createNN():
     return net, lossfun, optimizer
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture('0')
 
 while True:
     ret, frame = cap.read()
@@ -69,9 +69,12 @@ while True:
             right_index = results.pose_landmarks.landmark[25]
 
             Net, lossfun, optimizer = createNN()
-            Net.load_state_dict(torch.load('model1.pt'))
-            input = torch.tensor([[nose.x, nose.y, left_shoulder.x, left_shoulder.y, right_shoulder.x, right_shoulder.y, left_elbow.x, left_elbow.y, right_elbow.x, right_elbow.y, left_wrist.x, left_wrist.y, right_wrist.x, right_wrist.y, left_index.x, left_index.y, right_index.x, right_index.y, left_eye.x, left_eye.y, left_eye.z, right_eye.x, right_eye.y, right_eye.z]])
-            prediction = Net(input)
+            Net.load_state_dict(torch.load('model1.pt', map_location=device))
+            Net.to(device)
+            input = torch.tensor([[nose.x, nose.y, left_shoulder.x, left_shoulder.y, right_shoulder.x, right_shoulder.y, left_elbow.x, left_elbow.y, right_elbow.x, right_elbow.y, left_wrist.x, left_wrist.y, right_wrist.x, right_wrist.y, left_index.x, left_index.y, right_index.x, right_index.y, left_eye.x, left_eye.y, left_eye.z, right_eye.x, right_eye.y, right_eye.z]], device= device)
+            print(input.device)
+            prediction = Net(input).detach().cpu()
+            #prediction.cpu()
             prediction = torch.max(prediction,1)[1]
             pred = prediction[0].tolist()
 

@@ -1,9 +1,15 @@
 import cv2
 from ultralytics import YOLO 
+import torch
+
+if torch.cuda.is_available():
+    device = 0
+else:
+    device = 'cpu'
 def get_bounding_boxes(frame):
     model = YOLO('yolov8n.pt')
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = model.predict(img)
+    results = model.predict(img, device = device)
 
     bounding_boxes = []  # Danh sách để lưu trữ tọa độ của bounding boxes
 

@@ -6,8 +6,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 import torch.nn.functional as f
+import time
 
-
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 def createNN():
     class FFN(nn.Module):
         def __init__(self):
@@ -30,6 +31,8 @@ def createNN():
 
 
 cap = cv2.VideoCapture('D:\\Exam-Cheating-Detection\\Experiments\\TUNG\\cheating (1).mp4')
+prev_frame_time = 0
+new_frame_time = 0
 
 while True:
     ret, frame = cap.read()
@@ -64,18 +67,24 @@ while True:
         left_index = results.pose_landmarks.landmark[24]
         right_index = results.pose_landmarks.landmark[25]
     
-    Net, lossfun, optimizer = createNN()
-    Net.load_state_dict(torch.load('model1.pt'))
-    input = torch.tensor([[nose.x, nose.y, left_shoulder.x, left_shoulder.y, right_shoulder.x, right_shoulder.y, left_elbow.x, left_elbow.y, right_elbow.x, right_elbow.y, left_wrist.x, left_wrist.y, right_wrist.x, right_wrist.y, left_index.x, left_index.y, right_index.x, right_index.y, left_eye.x, left_eye.y, left_eye.z, right_eye.x, right_eye.y, right_eye.z]])
-    print(input)
-    prediction = Net(input)
-    prediction = torch.max(prediction,1)[1]
-    pred = prediction[0].tolist()
+        Net, lossfun, optimizer = createNN()
+        Net.load_state_dict(torch.load('model1.pt', map_location=device))
+        Net.to(device)
+        input = torch.tensor([[nose.x, nose.y, left_shoulder.x, left_shoulder.y, right_shoulder.x, right_shoulder.y, left_elbow.x, left_elbow.y, right_elbow.x, right_elbow.y, left_wrist.x, left_wrist.y, right_wrist.x, right_wrist.y, left_index.x, left_index.y, right_index.x, right_index.y, left_eye.x, left_eye.y, left_eye.z, right_eye.x, right_eye.y, right_eye.z]], device= device)
+        print(input.device)
+        prediction = Net(input).detach().cpu()
+        #prediction.cpu()
+        prediction = torch.max(prediction,1)[1]
+        pred = prediction[0].tolist()
     print(pred)
     if(pred ==1):
         cv2.rectangle(frame, (x1,y1), (x2,y2), (0,0,255), 2)
     else:
         cv2.rectangle(frame, (x1,y1), (x2,y2), (0,255,0), 2)
+
+    new_frame_time = time.time()
+    fps = 1/(new_frame_time-prev_frame_time)
+    cv2.putText(frame, str(int(fps)), (50,50), cv2.FONT_HERSHEY_COMPLEX , 1,  (0,255,0), 2)
     cv2.imshow("frame", frame)
 
     if cv2.waitKey(1) == ord("q"):
