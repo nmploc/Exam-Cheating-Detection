@@ -1,13 +1,7 @@
 import cv2
 from ultralytics import YOLO 
-def get_bounding_boxes():
+def get_bounding_boxes(frame):
     model = YOLO('yolov8n.pt')
-    cap = cv2.VideoCapture(0)
-    cap.set(3, 640)
-    cap.set(4, 480)
-
-    # Capture a frame
-    _, frame = cap.read()
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = model.predict(img)
 
@@ -20,11 +14,11 @@ def get_bounding_boxes():
             c = box.cls
             if model.names[int(c)] == 'person':
                 b = box.xyxy[0]  # Get the bounding box coordinates
-                top = int(b[0])
-                left = int(b[1])
-                bottom = int(b[2])
-                right = int(b[3])
-                bounding_box = (top, left, bottom, right)
+                x1= int(b[0])
+                y1 = int(b[1])
+                x2 = int(b[2])
+                y2 = int(b[3])
+                bounding_box = (x1, y1, x2, y2)
                 bounding_boxes.append(bounding_box)
 
     # Return the list of bounding box coordinates
