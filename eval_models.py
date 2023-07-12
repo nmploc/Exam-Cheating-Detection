@@ -37,7 +37,7 @@ data = Data.iloc[:,2:]
 dataT = torch.tensor(data.values).float()
 labelsT = torch.tensor(label).long()
 
-train_data, test_data, train_labels, test_labels = train_test_split(dataT, labelsT, test_size=0.2, random_state= True)
+train_data, test_data, train_labels, test_labels = train_test_split(dataT, labelsT, test_size=0.9, random_state= True)
 Test_data = test_data
 train_data = TensorDataset(train_data, train_labels)
 test_data = TensorDataset(test_data, test_labels)

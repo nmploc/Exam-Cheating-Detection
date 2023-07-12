@@ -3,7 +3,7 @@ import cv2
 import time
 
 def get_bounding_box(frame):
-    model = YOLO('yolov8.pt')
+    model = YOLO('yolov8m.pt')
 
     # Capture a frame
 

@@ -50,7 +50,7 @@ def createNN():
     return net, lossfun, optimizer
 
 def trainModel():
-    numepochs = 30000
+    numepochs = 40000
     net, lossfun, optimizer = createNN()
     net.to(device)
 
@@ -74,7 +74,7 @@ def trainModel():
     return losses, net
 
 losses, Net = trainModel()
-torch.save(Net.state_dict(), 'model.pt')
+torch.save(Net.state_dict(), 'model1.pt')
 pred = Net(Test_data)
 predictions = torch.max(pred,1)[1]
 print(predictions)
