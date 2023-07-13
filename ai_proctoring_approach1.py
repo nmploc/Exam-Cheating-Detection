@@ -29,7 +29,7 @@ def createNN():
     return net, lossfun, optimizer
 
 
-cap = cv2.VideoCapture('0')
+cap = cv2.VideoCapture(0)
 
 while True:
     ret, frame = cap.read()
