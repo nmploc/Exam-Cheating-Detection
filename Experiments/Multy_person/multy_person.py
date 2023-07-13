@@ -49,8 +49,6 @@ while True:
         img = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)
         results = pose.process(img)
 
-        mp.solutions.drawing_utils.draw_landmarks(cropped_frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-
         if results.pose_landmarks:
             for landmark in results.pose_landmarks.landmark:
                 if(landmark.visibility <= 0.2):
@@ -77,7 +75,7 @@ while True:
             #prediction.cpu()
             prediction = torch.max(prediction,1)[1]
             pred = prediction[0].tolist()
-
+            print(str(pred))
             if(pred == 1):
                 cv2.rectangle(frame, (x1,y1), (x2,y2), (0,0,255), 2)
             else:

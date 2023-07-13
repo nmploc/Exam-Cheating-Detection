@@ -19,7 +19,7 @@ def get_bounding_boxes(frame):
         for box in boxes:
             c = box.cls
             d = box.conf
-            if model.names[int(c)] == 'person' and d > 0.8:
+            if model.names[int(c)] == 'person' and d > 0.85:
                 b = box.xyxy[0]  # Get the bounding box coordinates
                 x1= int(b[0])
                 y1 = int(b[1])
