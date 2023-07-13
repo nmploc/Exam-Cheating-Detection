@@ -29,7 +29,7 @@ def createNN():
     return net, lossfun, optimizer
 
 
-cap = cv2.VideoCapture('0')
+cap = cv2.VideoCapture('D:\\Exam-Cheating-Detection\\Experiments\\Multy_person\\istockphoto-1373352218-640_adpp_is.mp4')
 
 while True:
     ret, frame = cap.read()
