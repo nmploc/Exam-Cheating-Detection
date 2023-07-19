@@ -1,0 +1,36 @@
+from pydantic import BaseModel
+from ultralytics import YOLO
+import cv2
+import torch
+
+if torch.cuda.is_available():
+    device = "cuda:0"
+else:
+    device = "cpu"
+
+class GetKeypoint(BaseModel):
+    NOSE:           int = 0
+    LEFT_EYE:       int = 1
+    RIGHT_EYE:      int = 2
+    LEFT_EAR:       int = 3
+    RIGHT_EAR:      int = 4
+    LEFT_SHOULDER:  int = 5
+    RIGHT_SHOULDER: int = 6
+    LEFT_ELBOW:     int = 7
+    RIGHT_ELBOW:    int = 8
+    LEFT_WRIST:     int = 9
+    RIGHT_WRIST:    int = 10
+    LEFT_HIP:       int = 11
+    RIGHT_HIP:      int = 12
+    LEFT_KNEE:      int = 13
+    RIGHT_KNEE:     int = 14
+    LEFT_ANKLE:     int = 15
+    RIGHT_ANKLE:    int = 16
+
+model = YOLO('yolov8n-pose.pt')
+cap = cv2.VideoCapture(0)
+
+while True:
+    ret, frame = cap.read()
+    result = model(frame, save = False, device = device)
+    result_keypoint = result.keypoints.xyn.cpu().numpy()[0]
