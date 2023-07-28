@@ -15,7 +15,7 @@ while True:
     #bounding_boxes = model(frame)
     #print(bounding_boxes)
     #result = model(frame, save = False)
-    result2 = model2(frame, save = False, device = 0)
+    result2 = model2(frame, save = False, device = 'cpu')
     #print(result[0])
     print(result2[0].boxes)
     print(result2[0].keypoints)
