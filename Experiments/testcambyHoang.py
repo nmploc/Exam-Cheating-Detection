@@ -1,7 +1,7 @@
 import cv2 
 from ultralytics import YOLO 
 import time 
-
+import numpy as np
 #model = YOLO('yolov8m.pt')
 model2 = YOLO('yolov8n-pose.pt')
 cap = cv2.VideoCapture(0)
@@ -17,7 +17,11 @@ while True:
     #result = model(frame, save = False)q
     result2 = model2(frame, save = False, device = 'cpu')
     keypoints = result2[0].keypoints
-    print(keypoints.xy[0])
+    keypoints_np = keypoints.numpy()
+    print(keypoints_np)
+    keypoints_np_reduce = np.squeeze(keypoints_np)
+    print(keypoints_np.shape)
+    print(keypoints_np_reduce.shape)
     #frame = result[0].plot()
     frame = result2[0].plot()
     new_frame_time = time.time()
