@@ -14,11 +14,10 @@ while True:
     
     #bounding_boxes = model(frame)
     #print(bounding_boxes)
-    #result = model(frame, save = False)
+    #result = model(frame, save = False)q
     result2 = model2(frame, save = False, device = 'cpu')
-    #print(result[0])
-    print(result2[0].boxes)
-    print(result2[0].keypoints)
+    keypoints = result2[0].keypoints
+    print(keypoints.xy)
     #frame = result[0].plot()
     frame = result2[0].plot()
     new_frame_time = time.time()
