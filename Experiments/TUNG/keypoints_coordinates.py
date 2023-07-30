@@ -10,7 +10,7 @@ prev_frame_time = 0
 new_frame_time = 0
 
 while True:
-    ret, frame = cap.read() 
+    frame = cv2.imread('D:\Exam-Cheating-Detection\Experiments\TUNG\jisoo_hit.jpg') 
     
     #bounding_boxes = model(frame)
     #print(bounding_boxes)
@@ -32,15 +32,13 @@ while True:
     #frame = result[0].plot()
     frame = result2[0].plot()
     '''
-    kp_coordinates = keypoints_np.xy
+    kp_coordinates = keypoints_np.xy[0]
     #print(keypoints_np.shape)
-    for kp in kp_coordinates[0]:
-        print(kp)
-    new_frame_time = time.time()
-    fps = 1/(new_frame_time-prev_frame_time)
-    prev_frame_time = new_frame_time
-    fps = int(fps)
-    cv2.putText(frame, str(fps), (50,50), cv2.FONT_HERSHEY_COMPLEX , 1,  (0,255,0), 2)
+    x = kp_coordinates[1][0]
+    y = kp_coordinates[1][1]
+
+    cv2.circle(frame, (int(x), int(y)), 5, (255,0,0), thickness=5)
+
     cv2.imshow('frame', frame)
     if cv2.waitKey(1) == ord('q'):
         break

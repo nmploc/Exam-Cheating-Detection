@@ -22,11 +22,15 @@ if keypoints is not None:
     print(keypoints_np_reduce.shape)
 
 # Display the image with FPS information
+'''
 new_frame_time = time.time()
 fps = 1 / (new_frame_time - prev_frame_time)
 prev_frame_time = new_frame_time
 fps = int(fps)
 cv2.putText(frame, str(fps), (50, 50), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
+'''
+
+
 cv2.imshow('frame', frame)
 cv2.waitKey(0)  # Wait until a key is pressed to close the window
 
