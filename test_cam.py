@@ -22,6 +22,12 @@ while True:
     keypoints_np_reduce = np.squeeze(keypoints_np)
     print(keypoints_np.shape)
     print(keypoints_np_reduce.shape)
+    print("in ra toa do cac keypoint")
+    for person in keypoints_np:
+        for keypoint in person:
+            x, y, confidence = keypoint
+            if confidence > 0.3: 
+                print(f"Keypoint: X={x}, Y={y}")
     #frame = result[0].plot()
     frame = result2[0].plot()
     new_frame_time = time.time()
